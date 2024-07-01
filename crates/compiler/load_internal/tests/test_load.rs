@@ -1131,15 +1131,15 @@ fn explicit_builtin_import() {
         indoc!(
             r"
             ── EXPLICIT BUILTIN IMPORT in tmp/explicit_builtin_import/Main.roc ─────────────
-            
+
             The builtin Bool was imported here:
-            
+
             3│  import Bool
                 ^^^^^^^^^^^
-            
+
             Builtins are imported automatically, so you can remove this import.
-            
-            Tip: Learn more about builtins in the tutorial: 
+
+            Tip: Learn more about builtins in the tutorial:
             <https://www.roc-lang.org/tutorial#builtin-modules>
             "
         )
@@ -1166,15 +1166,15 @@ fn explicit_builtin_import_empty_exposing() {
         indoc!(
             r"
             ── EXPLICIT BUILTIN IMPORT in tmp/empty_exposing_builtin_import/Main.roc ───────
-            
+
             The builtin Bool was imported here:
-            
+
             3│  import Bool exposing []
                 ^^^^^^^^^^^^^^^^^^^^^^^
-            
+
             Builtins are imported automatically, so you can remove this import.
-            
-            Tip: Learn more about builtins in the tutorial: 
+
+            Tip: Learn more about builtins in the tutorial:
             <https://www.roc-lang.org/tutorial#builtin-modules>
             "
         )
@@ -1205,16 +1205,16 @@ fn explicit_builtin_type_import() {
         indoc!(
             r"
             ── EXPLICIT BUILTIN IMPORT in tmp/explicit_builtin_type_import/Main.roc ────────
-            
+
             `Dict.Dict` was imported here:
-            
+
             3│  import Dict exposing [Dict, isEmpty]
                                       ^^^^
-            
+
             All types from builtins are automatically exposed, so you can remove
             `Dict` from the exposing list.
-            
-            Tip: Learn more about builtins in the tutorial: 
+
+            Tip: Learn more about builtins in the tutorial:
             <https://www.roc-lang.org/tutorial#builtin-modules>
             "
         )
@@ -1626,7 +1626,7 @@ fn module_params_optional() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "report import params mismatch")]
 fn module_params_typecheck_fail() {
     let modules = vec![
         (
@@ -1653,7 +1653,39 @@ fn module_params_typecheck_fail() {
         ),
     ];
 
-    multiple_modules("module_params_typecheck", modules).unwrap_err();
+    let _ = multiple_modules("module_params_typecheck_fail", modules);
+    // todo(agus): test reporting
+}
+
+#[test]
+#[should_panic(expected = "report import params mismatch")]
+fn module_params_typecheck_extra_fields() {
+    let modules = vec![
+        (
+            "Api.roc",
+            indoc!(
+                r#"
+            module { key } -> [url]
+
+            url = "example.com/$(key)"
+            "#
+            ),
+        ),
+        (
+            "Main.roc",
+            indoc!(
+                r#"
+        module [example]
+
+        import Api { key: "123", doesNotExist: Bool.true }
+
+        example = Api.url
+            "#
+            ),
+        ),
+    ];
+
+    let _ = multiple_modules("module_params_typecheck_extra_fields", modules);
     // todo(agus): test reporting
 }
 
@@ -1812,7 +1844,7 @@ fn module_cyclic_import_transitive() {
             indoc!(
                 r"
                 module []
-                
+
                 import Age
                 "
             ),

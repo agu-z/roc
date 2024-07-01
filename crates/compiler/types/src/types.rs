@@ -727,6 +727,12 @@ impl Types {
         index
     }
 
+    pub fn empty_record(&mut self) -> Index<TypeTag> {
+        let index = self.reserve_type_tag();
+        self.set_type_tag(index, TypeTag::EmptyRecord, Slice::default());
+        index
+    }
+
     pub fn function(
         &mut self,
         arguments: Slice<TypeTag>,

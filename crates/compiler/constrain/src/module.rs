@@ -63,6 +63,19 @@ fn constrain_params(
 
     let mut state = PatternState::default();
 
+    let closed_con = match loc_pattern.value {
+        Pattern::RecordDestructure {
+            whole_var: _,
+            ext_var,
+            destructs: _,
+        } => {
+            let empty_rec = types.empty_record();
+            let empty_rec_index = constraints.push_type(types, empty_rec);
+            constraints.store(empty_rec_index, ext_var, file!(), line!())
+        }
+        _ => todo!(),
+    };
+
     constrain_pattern(
         types,
         constraints,
@@ -74,6 +87,8 @@ fn constrain_params(
     );
 
     let pattern_constraints = constraints.and_constraint(state.constraints);
+
+    let pattern_constraints = constraints.and_constraint([pattern_constraints, closed_con]);
 
     let cons = constraints.let_constraint(
         [],
